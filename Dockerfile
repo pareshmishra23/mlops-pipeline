@@ -19,7 +19,7 @@ RUN groupadd -g 999 appuser && \
 
 # Copy installed libraries from the builder stage
 COPY --from=builder /root/.local /home/appuser/.local
-COPY app/ /app/app/
+COPY app/ /app/
 
 # Setup runtime environment variables
 ENV PATH=/home/appuser/.local/bin:$PATH
@@ -37,4 +37,4 @@ USER appuser
 EXPOSE 8080
 
 # Start Uvicorn server
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT}"]
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT}"]

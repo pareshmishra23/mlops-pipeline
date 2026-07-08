@@ -1,0 +1,22 @@
+# Virtual environment
+venv/
+.venv/
+env/
+ENV/
+
+# Python cache & compiled code
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# OS specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

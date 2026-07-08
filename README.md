@@ -95,15 +95,55 @@ docker run -p 8080:8080 ml-model-api:latest
 
 ## CI/CD Deployment Configuration
 
-### Option A: AWS ECS (Elastic Container Service)
-1. **GitHub Secrets:** Add the following secrets in your GitHub repository (`Settings > Secrets and variables > Actions`):
-   * `AWS_ACCESS_KEY_ID`: Your AWS access key ID.
-   * `AWS_SECRET_ACCESS_KEY`: Your AWS secret access key.
-2. **AWS Pre-requisites:**
-   * Create an ECR repository named `my-ml-model-repo`.
-   * Create an ECS cluster named `ml-model-cluster`.
-   * Create an ECS service named `ml-model-service` inside the cluster.
-   * Set up an IAM policy allowing Github Actions runner to login, push to ECR, and update the ECS task definition.
+### Option A: AWS ECS (Elastic Container Service) - No Helm/Kubernetes Required
+
+This pipeline deploys directly onto **AWS ECS with Fargate** (AWS's serverless container runner). Fargate abstracts away all virtual machine or cluster management, meaning you do not need Kubernetes clusters, Helm charts, or virtual machine maintenance.
+
+#### Deploy Sequence Flow
+
+```mermaid
+sequenceDiagram
+    participant Git as GitHub (Git Push)
+    participant Action as GitHub Actions Runner
+    participant ECR as AWS ECR (Image Store)
+    participant ECS as AWS ECS Fargate (Runner)
+
+    Git->>Action: 1. Trigger on Push to 'main'
+    Action->>Action: 2. Run Linting & Pytest
+    Action->>Action: 3. Build Docker Image
+    Action->>ECR: 4. Push Image (tag: git-sha & latest)
+    Action->>ECS: 5. Update Task Definition with new Image
+    ECS->>ECS: 6. Spin up new container & shut down old container (Rolling Update)
+```
+
+#### One-Time AWS Setup Guide
+
+To get this pipeline running, you need to set up the following resources in your AWS account once:
+
+1.  **Create a Container Registry (ECR):**
+    *   Go to **Elastic Container Registry (ECR)** in the AWS Console.
+    *   Click **Create Repository**.
+    *   Set the name to **`my-ml-model-repo`** (matches the repository name in the `.github/workflows/deploy.yml`).
+2.  **Create a serverless ECS Cluster:**
+    *   Go to the **Elastic Container Service (ECS)** console.
+    *   Click **Create Cluster**.
+    *   Choose the **Fargate (Serverless)** template and name the cluster **`ml-model-cluster`**.
+3.  **Register the Task Definition:**
+    *   Create a Task Definition named **`ml-model-task`**. 
+    *   Configure it to use **AWS Fargate** with `512 CPU` and `1024 Memory`.
+    *   Add a container named **`ml-model-api`** pointing to your ECR image URL. Expose port `8080`.
+    *   Alternatively, you can import the [.aws/task-definition.json](file:///Users/pareshmishra/Documents/development/mlops-pipeline/.aws/task-definition.json) file included in this repository.
+4.  **Create the ECS Service:**
+    *   Under your cluster, create a **Service** named **`ml-model-service`** using the task definition you created.
+    *   This service will monitor your running containers and perform rolling updates whenever a new image is pushed.
+5.  **Configure GitHub Actions Secrets:**
+    *   Create an IAM User in AWS with permissions to interact with ECR, ECS, and update task definitions.
+    *   Generate an Access Key and Secret Key for this user.
+    *   Add them as GitHub Repository Secrets (`Settings > Secrets and variables > Actions > Secrets`):
+        *   `AWS_ACCESS_KEY_ID`
+        *   `AWS_SECRET_ACCESS_KEY`
+
+---
 
 ### Option B: Google Cloud Run (GCP)
 1. **GitHub Secrets:** Add the following secret:

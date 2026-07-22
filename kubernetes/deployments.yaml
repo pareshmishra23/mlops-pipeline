@@ -22,7 +22,7 @@ spec:
       - name: iris-api
 
         # We'll update this image after pushing to GHCR
-        image: ghcr.io/pareshmishra23/iris-api:v1
+        image: ghcr.io/pareshmishra23/mlops-pipeline/iris-api:v1
 
         imagePullPolicy: Always
 

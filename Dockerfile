@@ -1,40 +1,31 @@
-# Stage 1: Build dependencies
-FROM python:3.10-slim AS builder
+# ---------- Builder ----------
+FROM python:3.11-slim AS builder
 
 WORKDIR /build
 
 COPY app/requirements.txt .
 
-# Install dependencies in a local user directory to separate build from runtime environment
-RUN pip install --no-cache-dir --user -r requirements.txt
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
-# Stage 2: Production image
-FROM python:3.10-slim AS runner
+# ---------- Runtime ----------
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Setup secure non-root user
 RUN groupadd -g 999 appuser && \
     useradd -r -u 999 -g appuser -d /home/appuser -m appuser
 
-# Copy installed libraries from the builder stage
-COPY --from=builder /root/.local /home/appuser/.local
+COPY --from=builder /install /usr/local
 COPY app/ /app/
 
-# Setup runtime environment variables
-ENV PATH=/home/appuser/.local/bin:$PATH
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PORT=8080
 
-# Adjust permissions
-RUN chown -R appuser:appuser /app /home/appuser
+RUN chown -R appuser:appuser /app
 
-# Switch to non-root user for security
 USER appuser
 
-# Expose the API port
 EXPOSE 8080
 
-# Start Uvicorn server
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT}"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]

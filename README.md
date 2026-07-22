@@ -55,11 +55,13 @@ uvicorn app.main:app --reload --port 8080
 *   **Health check:** `curl http://127.0.0.1:8080/health`
 *   **Predict endpoint:**
     ```bash
-    curl -X 'POST' \
-      'http://127.0.0.1:8080/predict' \
-      -H 'accept: application/json' \
-      -H 'Content-Type: application/json' \
-      -D '{"features": [5.1, 3.5, 1.4, 0.2]}'
+    curl -X POST \
+  "http://127.0.0.1:8080/predict" \
+  -H "accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "features": [5.1, 3.5, 1.4, 0.2]
+  }'
     ```
 
 ### 2. Run Tests Locally
@@ -67,8 +69,8 @@ uvicorn app.main:app --reload --port 8080
 Execute the test suite using `pytest`:
 
 ```bash
-pytest tests/ -v
-```
+PYTHONPATH=. python -m pytest tests -v
+
 
 To run linting checks:
 ```bash

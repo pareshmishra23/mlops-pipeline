@@ -10,6 +10,7 @@ env:
   # Choose your cloud deployment target: 'aws' or 'gcp' (uncomment and configure active job in CD stage)
   DEPLOY_TARGET: "aws" 
   
+  
   # AWS Configuration
   AWS_REGION: "us-east-1"
   ECR_REPOSITORY: "my-ml-model-repo"
@@ -36,7 +37,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.10'
+        python-version: '3.11'
         cache: 'pip'
 
     - name: Install Dependencies
@@ -56,9 +57,11 @@ jobs:
         black --check app tests
 
     - name: Run Unit Tests
+      env:
+        PYTHONPATH: ${{ github.workspace }}
       run: |
-        pytest tests/ -v
-
+        python -m pytest tests -v
+    
     - name: Verify Docker Build
       run: |
         docker build -t test-image:latest .

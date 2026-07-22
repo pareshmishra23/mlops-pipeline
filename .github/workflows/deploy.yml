@@ -57,9 +57,11 @@ jobs:
         black --check app tests
 
     - name: Run Unit Tests
+      env:
+        PYTHONPATH: ${{ github.workspace }}
       run: |
-        pytest tests/ -v
-
+        python -m pytest tests -v
+    
     - name: Verify Docker Build
       run: |
         docker build -t test-image:latest .

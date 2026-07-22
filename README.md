@@ -69,8 +69,8 @@ uvicorn app.main:app --reload --port 8080
 Execute the test suite using `pytest`:
 
 ```bash
-pytest tests/ -v
-```
+PYTHONPATH=. python -m pytest tests -v
+
 
 To run linting checks:
 ```bash

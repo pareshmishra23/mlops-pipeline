@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: iris-api
+  namespace: mlops
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: iris-api
+
+  template:
+    metadata:
+      labels:
+        app: iris-api
+
+    spec:
+      containers:
+      - name: iris-api
+
+        # We'll update this image after pushing to GHCR
+        image: ghcr.io/pareshmishra23/iris-api:v1
+
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 8080
